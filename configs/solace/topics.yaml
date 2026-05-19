@@ -1,0 +1,17 @@
+topics:
+  incident_created: dataops/incidents/created
+  incident_classified: dataops/incidents/classified
+  postgres_investigate_request: dataops/postgres/investigate/request
+  postgres_investigate_result: dataops/postgres/investigate/result
+  snowflake_investigate_request: dataops/snowflake/investigate/request
+  snowflake_investigate_result: dataops/snowflake/investigate/result
+  remediation_approval_requested: dataops/remediation/approval/requested
+  remediation_approval_received: dataops/remediation/approval/received
+  incident_resolved: dataops/incidents/resolved
+  slack_notification: dataops/notifications/slack
+
+notes:
+  - Use these topics as the public contract between the incident producer, Agent Mesh, Mick, Frosty, and notification gateways.
+  - For the interview demo, the Python simulation prints each publish and subscription step.
+  - For Solace Cloud, map these topics to queue subscriptions for each agent component.
+

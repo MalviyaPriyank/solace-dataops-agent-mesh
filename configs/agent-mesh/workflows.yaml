@@ -1,0 +1,28 @@
+workflows:
+  checkout-incident-response:
+    trigger: dataops/incidents/created
+    steps:
+      - name: classify-incident
+        agent: incident-orchestrator
+        emits:
+          - dataops/incidents/classified
+
+      - name: investigate-operational-db
+        agent: mick-postgres-agent
+        input_topic: dataops/postgres/investigate/request
+        output_topic: dataops/postgres/investigate/result
+
+      - name: investigate-warehouse
+        agent: frosty-snowflake-agent
+        input_topic: dataops/snowflake/investigate/request
+        output_topic: dataops/snowflake/investigate/result
+
+      - name: correlate-and-recommend
+        agent: incident-response-aggregator
+        waits_for:
+          - dataops/postgres/investigate/result
+          - dataops/snowflake/investigate/result
+        emits:
+          - dataops/incidents/resolved
+          - dataops/notifications/slack
+

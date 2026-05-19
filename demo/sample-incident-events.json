@@ -1,0 +1,20 @@
+[
+  {
+    "incident_id": "INC-2042",
+    "title": "Checkout latency and failed order writes",
+    "service": "checkout-api",
+    "severity": "high",
+    "symptoms": [
+      "p95 checkout latency increased from 480ms to 3200ms",
+      "order write failures increased to 8%",
+      "analytics dashboard is showing stale conversion data"
+    ],
+    "started_at": "2026-05-19T13:40:00Z",
+    "correlation_ids": {
+      "postgres_database": "commerce",
+      "snowflake_database": "ANALYTICS",
+      "pipeline": "orders_to_snowflake"
+    }
+  }
+]
+

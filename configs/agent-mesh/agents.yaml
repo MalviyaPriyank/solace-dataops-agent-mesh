@@ -1,0 +1,41 @@
+agents:
+  - name: incident-orchestrator
+    role: Classifies incoming incidents and delegates investigation tasks.
+    subscribes:
+      - dataops/incidents/created
+    publishes:
+      - dataops/incidents/classified
+      - dataops/postgres/investigate/request
+      - dataops/snowflake/investigate/request
+
+  - name: mick-postgres-agent
+    role: Uses Mick to investigate PostgreSQL operational symptoms.
+    source_repo: https://github.com/Gyrus-Dev/Mick
+    subscribes:
+      - dataops/postgres/investigate/request
+    publishes:
+      - dataops/postgres/investigate/result
+    safety:
+      - Read-only investigation by default.
+      - Write or destructive operations require approval events.
+
+  - name: frosty-snowflake-agent
+    role: Uses Frosty to investigate Snowflake analytical and pipeline symptoms.
+    source_repo: https://github.com/Gyrus-Dev/frosty
+    subscribes:
+      - dataops/snowflake/investigate/request
+    publishes:
+      - dataops/snowflake/investigate/result
+    safety:
+      - Read-only investigation by default.
+      - DDL or risky warehouse changes require approval events.
+
+  - name: incident-response-aggregator
+    role: Correlates agent findings and publishes a final incident response.
+    subscribes:
+      - dataops/postgres/investigate/result
+      - dataops/snowflake/investigate/result
+    publishes:
+      - dataops/incidents/resolved
+      - dataops/notifications/slack
+
