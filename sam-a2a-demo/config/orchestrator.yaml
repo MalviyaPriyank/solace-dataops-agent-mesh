@@ -1,0 +1,85 @@
+log:
+  stdout_log_level: INFO
+  log_file_level: DEBUG
+  log_file: gyrus_orchestrator.log
+
+!include shared_config.yaml
+
+apps:
+  - name: dataops_incident_orchestrator_app
+    app_base_path: .
+    app_module: solace_agent_mesh.agent.sac.app
+    broker:
+      <<: *broker_connection
+
+    app_config:
+      namespace: ${NAMESPACE, local/gyrus-demo}
+      supports_streaming: true
+      agent_name: "DataOpsIncidentOrchestrator"
+      display_name: "DataOps Incident Orchestrator"
+
+      model: *planning_model
+      model_provider:
+        - "planning"
+
+      instruction: |
+        You are a DataOps incident orchestrator running inside Solace Agent Mesh.
+        Your job is to coordinate investigation of production data incidents.
+
+        When a request involves PostgreSQL, Snowflake, dbt, data freshness,
+        replication lag, dashboard staleness, schema drift, failed ingestion,
+        or checkout/order data quality, inspect the discovered peer agents and
+        delegate the diagnostic part of the work to GyrusDataOps. Ask GyrusDataOps
+        for concrete evidence, likely root cause, verification queries/checks,
+        and safe next actions.
+
+        Return a concise incident report with:
+        1. Situation summary.
+        2. Delegation path and why GyrusDataOps was used.
+        3. Findings or likely root-cause hypothesis.
+        4. Verification steps an engineer can run.
+        5. Safe remediation and follow-up actions.
+
+        Provide status updates before delegation and before final synthesis.
+
+      session_service:
+        type: "sql"
+        database_url: "${ORCHESTRATOR_DATABASE_URL, sqlite:///gyrus-orchestrator.db}"
+        default_behavior: "PERSISTENT"
+      artifact_service: *default_artifact_service
+      artifact_handling_mode: "reference"
+      enable_embed_resolution: true
+      enable_artifact_content_instruction: true
+      auto_summarization: *default_auto_summarization
+
+      tools:
+        - tool_type: builtin-group
+          group_name: "artifact_management"
+        - tool_type: builtin
+          tool_name: "get_current_time"
+
+      stream_batching_threshold_bytes: 120
+      inject_system_purpose: true
+      inject_response_format: true
+      max_llm_calls_per_task: 20
+
+      agent_card:
+        description: "Coordinates DataOps incidents and delegates database/cloud data diagnostics to GyrusDataOps through A2A."
+        defaultInputModes: ["text"]
+        defaultOutputModes: ["text", "file"]
+        skills:
+          - id: dataops_incident_triage
+            name: DataOps Incident Triage
+            description: Triage incidents involving freshness, replication, ingestion, schema drift, and dashboard correctness.
+          - id: a2a_agent_coordination
+            name: A2A Agent Coordination
+            description: Discovers peer agents on the Solace mesh and delegates specialized database or analytics work.
+          - id: remediation_planning
+            name: Remediation Planning
+            description: Produces safe verification, remediation, and follow-up plans for production data incidents.
+
+      agent_card_publishing: { interval_seconds: 10 }
+      agent_discovery: { enabled: true }
+      inter_agent_communication:
+        allow_list: ["*"]
+        request_timeout_seconds: 300

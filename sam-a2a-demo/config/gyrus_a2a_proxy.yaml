@@ -1,0 +1,26 @@
+log:
+  stdout_log_level: INFO
+  log_file_level: DEBUG
+  log_file: gyrus_a2a_proxy.log
+
+!include shared_config.yaml
+
+apps:
+  - name: gyrus_a2a_proxy_app
+    app_base_path: .
+    app_module: src.solace_agent_mesh.agent.proxies.a2a.app
+    broker:
+      <<: *broker_connection
+
+    app_config:
+      namespace: ${NAMESPACE, local/gyrus-demo}
+      artifact_service: *default_artifact_service
+      artifact_handling_mode: "reference"
+      discovery_interval_seconds: 5
+
+      proxied_agents:
+        - name: "GyrusDataOps"
+          url: "${GYRUS_A2A_URL, http://127.0.0.1:8004}"
+          agent_card_path: "/.well-known/agent-card.json"
+          use_agent_card_url: false
+          request_timeout_seconds: 300
